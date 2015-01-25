@@ -108,18 +108,20 @@ num_neg_examples = size(neg_examples,1);
 num_pos_examples = size(pos_examples,1);
 for i=1:num_neg_examples
     this_case = neg_examples(i,:);
-    x = this_case'; %Hint
-    activation = this_case*w;
+    x = this_case';
+    activation = x' * w;
+    % Incorrect positive classification.
     if (activation >= 0)
-        %YOUR CODE HERE
+        w = w - x;
     end
 end
 for i=1:num_pos_examples
     this_case = pos_examples(i,:);
     x = this_case';
-    activation = this_case*w;
+    activation = x' * w;
+    % Incorrect negative classification.
     if (activation < 0)
-        %YOUR CODE HERE
+        w = w + x;
     end
 end
 
