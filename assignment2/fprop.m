@@ -13,7 +13,7 @@ function [embedding_layer_state, hidden_layer_state, output_layer_state] = ...
 %     numhid1 is the dimensionality of the embedding space.
 %
 %   embed_to_hid_weights: Weights between the word embedding layer and hidden
-%     layer as a matrix of soze numhid1*numwords X numhid2, numhid2 is the
+%     layer as a matrix of size numhid1*numwords X numhid2, numhid2 is the
 %     number of hidden units.
 %
 %   hid_to_output_weights: Weights between the hidden layer and output softmax
