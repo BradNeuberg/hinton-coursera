@@ -177,8 +177,36 @@ function ret = d_loss_by_d_model(model, data, wd_coefficient)
   % The returned object is supposed to be exactly like parameter <model>, i.e. it has fields ret.input_to_hid and ret.hid_to_class. However, the contents of those matrices are gradients (d loss by d model parameter), instead of model parameters.
 	 
   % This is the only function that you're expected to change. Right now, it just returns a lot of zeros, which is obviously not the correct output. Your job is to change that.
-  ret.input_to_hid = model.input_to_hid * 0;
-  ret.hid_to_class = model.hid_to_class * 0;
+
+  m = size(data.inputs, 2);
+
+  % First, feed forward the values, capture the weight input's (class_input and hid_input) and
+  % activations (class_output and hid_output) at every layer.
+  hid_input = model.input_to_hid * data.inputs;
+  hid_output = logistic(hid_input);
+  class_input = model.hid_to_class * hid_output;
+  class_normalizer = log_sum_exp_over_rows(class_input);
+  log_class_prob = class_input - repmat(class_normalizer, [size(class_input, 1), 1]);
+  class_output = exp(log_class_prob);
+
+  % Now, back propagate. Compute the delta error (delta_3) for the output layer (the third layer).
+  delta_3 = class_output - data.targets;
+
+  % Compute the delta error (delta_2) for the hidden layer.
+  delta_2 = (model.hid_to_class' * delta_3) .* (logistic(hid_input) .* (1 - logistic(hid_input)));
+
+  % Compute the gradient for the output layer across all training examples then divide
+  % across the training set size for each weight gradient.
+  ret.hid_to_class = (1 / m) .* (delta_3 * hid_output');
+
+  % Compute the gradient for the hidden layer across all training examples then divide
+  % across the training set size for each weight gradient.
+  ret.input_to_hid = (1 / m) .* (delta_2 * data.inputs');
+
+  % Finally, add up the weight decay terms for each weight then add this into each weight decay term
+  % to the computed gradients. This is simply wd_coefficient .* weights.
+  ret.hid_to_class += wd_coefficient .* model.hid_to_class;
+  ret.input_to_hid += wd_coefficient .* model.input_to_hid;
 end
 
 function ret = model_to_theta(model)
