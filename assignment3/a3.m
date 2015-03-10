@@ -196,17 +196,12 @@ function ret = d_loss_by_d_model(model, data, wd_coefficient)
   delta_2 = (model.hid_to_class' * delta_3) .* (logistic(hid_input) .* (1 - logistic(hid_input)));
 
   % Compute the gradient for the output layer across all training examples then divide
-  % across the training set size for each weight gradient.
-  ret.hid_to_class = (1 / m) .* (delta_3 * hid_output');
+  % across the training set size for each weight gradient. Add in the weight decay.
+  ret.hid_to_class = (1 / m) .* (delta_3 * hid_output') + wd_coefficient .* model.hid_to_class;
 
   % Compute the gradient for the hidden layer across all training examples then divide
-  % across the training set size for each weight gradient.
-  ret.input_to_hid = (1 / m) .* (delta_2 * data.inputs');
-
-  % Finally, add up the weight decay terms for each weight then add this into each weight decay term
-  % to the computed gradients. This is simply wd_coefficient .* weights.
-  ret.hid_to_class += wd_coefficient .* model.hid_to_class;
-  ret.input_to_hid += wd_coefficient .* model.input_to_hid;
+  % across the training set size for each weight gradient. Add in the weight decay.
+  ret.input_to_hid = (1 / m) .* (delta_2 * data.inputs') + wd_coefficient .* model.input_to_hid;
 end
 
 function ret = model_to_theta(model)
