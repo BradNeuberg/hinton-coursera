@@ -10,8 +10,6 @@ function d_G_by_rbm_w = configuration_goodness_gradient(visible_state, hidden_st
 
   d_G_by_rbm_w = zeros(number_hidden, number_visible);
   for i = 1:number_visible
-    for j = 1:number_hidden
-      d_G_by_rbm_w(j, i) = sum(visible_state(i, :) .* hidden_state(j, :)) / m;
-    end
+    d_G_by_rbm_w(:, i) = (visible_state(i, :) * hidden_state') ./ m;
   end
 end
